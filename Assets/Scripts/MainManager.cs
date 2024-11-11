@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
+using UnityEditor;
+using TMPro;
 
 public class MainManager : MonoBehaviour
 {
@@ -10,9 +13,11 @@ public class MainManager : MonoBehaviour
     public int LineCount = 6;
     public Rigidbody Ball;
 
-    public Text ScoreText;
-    public GameObject GameOverText;
-    
+    [SerializeField] private Text ScoreText;
+    [SerializeField] private GameObject GameOverText;
+    [SerializeField] private Text BestScoreText;
+    [SerializeField] private Button returnButton;
+
     private bool m_Started = false;
     private int m_Points;
     
@@ -36,6 +41,9 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        ScoreText.text = "Score : " + DataPersistence.Instance.currPlayerName + " : 0";
+        BestScoreText.text = "Best Score : " + DataPersistence.Instance.bestPlayer + 
+            " : " + DataPersistence.Instance.bestScore;
     }
 
     private void Update()
@@ -61,16 +69,27 @@ public class MainManager : MonoBehaviour
             }
         }
     }
-
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = "Score : " + DataPersistence.Instance.currPlayerName + $" : {m_Points}";
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        returnButton.gameObject.SetActive(true);
+        if(m_Points >= DataPersistence.Instance.bestScore)
+        {
+            DataPersistence.Instance.bestScore = m_Points;
+            DataPersistence.Instance.bestPlayer = DataPersistence.Instance.currPlayerName;
+            DataPersistence.Instance.SaveScoreInfo();
+        }
+    }
+
+    public void ReturnToMenu()
+    {
+        SceneManager.LoadScene(0);
     }
 }
